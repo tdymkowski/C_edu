@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
-
+#include "lj_potential.h"
+#include "xyz_reader.h"
 
 float lj_potential(float epsilon,
     float sigma, float r){
@@ -16,7 +17,15 @@ float lj_potential(float epsilon,
 }
 
 
-int main(){
+int main_lj(double epsilon,
+            double sigma,
+            int NMAX,
+            int NCLMAX,
+            float R_CUT,
+            //float r[][3,
+            struct Atoms atoms[],
+            double Region[3]){
+  /*
   // LJ Epsilon
   double epsilon = 3.1401000;  // eV
   // LJ sigma
@@ -37,6 +46,7 @@ int main(){
   };
   // Cell size
   double Region[3] = {10., 10., 10.};
+  */
 
   // Create NN list with linked-lists
   const int EMPTY = -1;
@@ -56,18 +66,16 @@ int main(){
   double lcxyz = lcyz * lc[0];
   
   double mc[3];
-  for (int c=0; c<NCLMAX; c++) head[c] = EMPTY;
+  for (int c=0; c<lcxyz; c++) head[c] = EMPTY;
   for (int i=0; i<NMAX; i++){
-    for (int a=0; a<3; a++) mc[a] = r[i][a]/rc[a];
+    float r[3] = {atoms[i].x, atoms[i].y, atoms[i].z};
+    for (int a=0; a<3; a++) {
+      mc[a] = r[a]/rc[a];
+    }
     int c = mc[0] * lcyz + mc[1] * lc[2] + mc[2];
     lscl[i] = head[c];
     head[c] = i;
     }
-  /*
-  for (int i=0; i<NMAX; i++){
-    printf("%lf\n", lscl[i]);
-  }
-  */
   // Calculate LJ
   double E_tot = 0;
   int mcl[3]; 
@@ -98,9 +106,9 @@ int main(){
         int j = head[cl]; // Scan atom j in cell cl
         while (j != EMPTY){
           if (i < j){
-            float r_ijx = r[i][0] - r[j][0] + rshift[0];
-            float r_ijy = r[i][1] - r[j][1] + rshift[1];
-            float r_ijz = r[i][2] - r[j][2] + rshift[2];
+            float r_ijx = atoms[i].x - atoms[j].x + rshift[0];
+            float r_ijy = atoms[i].y - atoms[j].y + rshift[1];
+            float r_ijz = atoms[i].z - atoms[j].z + rshift[2];
             float r_ij = r_ijx*r_ijx + r_ijy*r_ijy + r_ijz*r_ijz;
             if (r_ij  < R_CUT * R_CUT){  // Calculate LJ potential
               E_tot += lj_potential(epsilon, sigma, r_ij);
