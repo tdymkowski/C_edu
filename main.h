@@ -10,6 +10,13 @@ struct Atoms {
     float x;
     float y;
     float z;
+    float vel_x;
+    float vel_y;
+    float vel_z;
+    float a_x;
+    float a_y;
+    float a_z;
+    float mass;
     float epsilon;
     float sigma;
     float r_cut;

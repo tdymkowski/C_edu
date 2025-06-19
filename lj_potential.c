@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "lj_potential.h"
+#include "main.h"
 
 
 static inline double lj_raw(float epsilon, float sigma, float r){
@@ -18,6 +20,41 @@ static inline double lj_raw_dr(float epislon, float sigma, float r){
   return dVdr;
 }
 
+
+void lj_i_acc(float epsilon,
+    float sigma,
+    struct Atoms atoms_i,
+    struct Atoms atoms_j){
+
+  float r_ij_x = atoms_i.x - atoms_j.x;
+  float r_ij_y = atoms_i.y - atoms_j.y;
+  float r_ij_z = atoms_i.z - atoms_j.z;
+  float r_ij = sqrtf(r_ij_x*r_ij_x + r_ij_y*r_ij_y + r_ij_z * r_ij_z);
+
+  double r1 = sqrt(r_ij/sigma);  // double chek it
+  double r2 = 1.0/r_ij;
+  double r6 = r2 * r2 * r2;
+  double fcVal = epsilon * 48.0 * r2 * r6 * (r6 - 0.5);
+
+  double f_x = fcVal * r_ij_x;
+  double f_y = fcVal * r_ij_y;
+  double f_z = fcVal * r_ij_z;
+  
+  atoms_i.a_x += f_x / atoms_i.mass;
+  atoms_i.a_y += f_y / atoms_i.mass;
+  atoms_i.a_z += f_z / atoms_i.mass;
+  
+  atoms_j.a_x -= f_x / atoms_j.mass;
+  atoms_j.a_y -= f_y / atoms_i.mass;
+  atoms_j.a_z -= f_z / atoms_i.mass;
+  }
+
+
+void clear_acc(struct Atoms atom){
+   atom.a_x = 0;
+   atom.a_y = 0;
+   atom.a_z = 0;
+}
 
 double lj_potential(float epsilon,
     float sigma,
@@ -40,7 +77,7 @@ double lj_potential(float epsilon,
 
 int main_lj(int NMAX,
             int NCLMAX,
-            int R_CUT,
+            double R_CUT,
             struct Atoms atoms[],
             double Region[3]){
   // Create NN list with linked-lists
@@ -50,7 +87,6 @@ int main_lj(int NMAX,
     floorl(Region[1]/R_CUT),
     floorl(Region[2]/R_CUT),
   };
-//  printf("Entering cell (%d,%d,%d)\n", lc[0], lc[1], lc[2]);
   double rc[3] = {
     Region[0]/lc[0],
     Region[1]/lc[1],
@@ -63,33 +99,26 @@ int main_lj(int NMAX,
   
   int mc[3];
   for (int c=0; c<lcxyz; c++) head[c] = EMPTY;
-//  printf("DEBUG 1: lc = (%d, %d, %d), rc = (%.6f, %.6f, %.6f), lcxyz = %d\n",
-//       lc[0], lc[1], lc[2],
-//       rc[0], rc[1], rc[2],
-//       lcxyz);
 
   for (int i=0; i<NMAX; i++){
-//    printf("DEBUG 2: i = %d\n", i);
     float r[3] = {atoms[i].x, atoms[i].y, atoms[i].z};
-//    printf("DEBUG 3: r = (%f %f %f)\n", r[0], r[1], r[2]);
     for (int a=0; a<3; a++) {
       mc[a] = r[a]/rc[a];
     }
-//    printf("DEBUG 4: mc = (%d %d %d)\n", mc[0], mc[1], mc[2]);
     int c = mc[0] * lcyz + mc[1] * lc[2] + mc[2];
-//    printf("DEBUG 5: c = %d\n", c);
     lscl[i] = head[c];
     head[c] = i;
     }
+
+  // Clear forces
+  for (int z=0; z<NMAX; z++) clear_acc(atoms[z]);
+
   // Calculate LJ
   double E_tot = 0;
   double F_tot = 0;
   int mcl[3]; 
   double rshift[3];
-//  printf("DEBUG 6: lc = (%d, %d, %d), rc = (%.6f, %.6f, %.6f), lcxyz = %d\n",
-//       lc[0], lc[1], lc[2],
-//       rc[0], rc[1], rc[2],
-//       lcxyz);
+
   for (mc[0]=0; mc[0]<lc[0]; (mc[0])++)
   for (mc[1]=0; mc[1]<lc[1]; (mc[1])++)
   for (mc[2]=0; mc[2]<lc[2]; (mc[2])++){  // Scan inner cells
@@ -127,10 +156,10 @@ int main_lj(int NMAX,
               E_tot += E_i;
               double F_i = lj_raw_dr(atoms[i].epsilon, atoms[i].sigma, r);
               F_tot += F_i;
-              printf("Energy ij: %3s %4d %3s %4d %5.6lf eV\n",
-                  atoms[i].symbol, i, atoms[j].symbol, j, E_i);
-              printf("Force  ij: %3s %4d %3s %4d %5.6lf eV/Ang\n",
-                  atoms[i].symbol, i, atoms[j].symbol, j, F_i);
+              lj_i_acc(atoms[i].epsilon,
+                  atoms[i].sigma,
+                  atoms[i],
+                  atoms[j]);
             }
           }
           j = lscl[j];
@@ -141,5 +170,5 @@ int main_lj(int NMAX,
   }
   printf("LJ Potential: %3lf eV\n", E_tot);
   printf("LJ Forces:    %3lf eV/Ang\n", F_tot);
-  return 0;
+  return EXIT_SUCCESS;
 }

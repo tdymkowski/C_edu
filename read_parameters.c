@@ -15,6 +15,7 @@ typedef struct {
     double cutoff;
     double epsilon;
     double sigma;
+    double mass;
 } LJEntry;
 
 
@@ -65,18 +66,22 @@ int main_params_reader(struct Atoms atoms[], int N_MAX){
     tok = strtok(NULL,",");
     entry.sigma = tok ? strtod(tok, NULL) : 0.0;
 
+    // get mass
+    tok = strtok(NULL, ",");
+    entry.mass = tok ? strtod(tok, NULL) : 0.0;
     // Compare species_i with atom[i].symbol
     bool printed = false;
     for (int i = 0; i < N_MAX; i++){
       if (strcmp(entry.species_i, atoms[i].symbol) == 0){
         if (!printed && strcmp(entry.species_i, atoms[i].symbol) == 0){
-        fprintf(stdout, "Match for atom %s:\ncutoff=%.3f Ang\nε=%.6f eV\nσ=%.6f Ang\n",
-            atoms[i].symbol, entry.cutoff, entry.epsilon, entry.sigma);
+        fprintf(stdout, "Match for atom %s:\ncutoff=%.3f Ang\nε=%.6f eV\nσ=%.6f Ang\nMass=%.4f\n",
+            atoms[i].symbol, entry.cutoff, entry.epsilon, entry.sigma, entry.mass);
         printed = true;
         }
         atoms[i].r_cut = entry.cutoff;
         atoms[i].epsilon = entry.epsilon;
         atoms[i].sigma = entry.sigma;
+        atoms[i].mass = entry.mass;
       }
     }
 

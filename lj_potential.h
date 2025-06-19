@@ -8,6 +8,6 @@
 #include "main.h"
 
 double lj_potential(float epsilon, float sigma, float r, float R_MAX);
-int main_lj(int NMAX, int NCLMAX, int R_CUT, struct Atoms atoms[], double Region[3]);
+int main_lj(int NMAX, int NCLMAX, double R_CUT, struct Atoms atoms[], double Region[3]);
 
 #endif

@@ -2,9 +2,9 @@ CC := gcc
 CFLAGS :=-Wall -Wextra -std=c11 -g
 LDFLAGS := -lm
 
-SRCS := main.c xyz_reader.c lj_potential.c read_parameters.c
+SRCS := main.c xyz_reader.c xyz_writer.c lj_potential.c read_parameters.c verlet.c
 
-HEADERS := read_parameters.h xyz_reader.h lj_potential.h main.h 
+HEADERS := read_parameters.h xyz_reader.h xyz_writer.h lj_potential.h verlet.h main.h 
 
 OBJS=$(SRCS:.c=.o)
 

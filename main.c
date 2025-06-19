@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include "main.h"
 #include "read_parameters.h"
-
+#include "verlet.h"
+#include "xyz_writer.h"
 
 int main(int argc, char *argv[]){
   if (argc == 1){
@@ -17,15 +18,16 @@ int main(int argc, char *argv[]){
   struct Atoms atoms[NMAX];
   main_xyz_reader(argv[1], atoms, NMAX);
   main_params_reader(atoms, NMAX);
-  const int NCLMAX = 100;
+  const int NCLMAX = 10;
   // Lx, Ly, Lz
   double Region[3] = {8., 8., 8.};
-  main_lj(NMAX,
-          NCLMAX,
-          R_CUT,
-          atoms,
-          Region);
-
+  start_simulation(atoms,
+    NMAX,
+    NCLMAX,
+    R_CUT,
+    Region,
+    0.1,
+    100);
 
   return EXIT_SUCCESS;
 }
