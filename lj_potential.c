@@ -4,6 +4,8 @@
 #include "lj_potential.h"
 #include "main.h"
 
+const float V_MAX = 200.;
+const float F_MAX = 10.;
 
 static inline double lj_raw(float epsilon, float sigma, float r){
   float s_r = sigma/r;
@@ -17,44 +19,48 @@ static inline double lj_raw_dr(float epislon, float sigma, float r){
   float s_r = sigma/r;
   float s6 = powf(s_r, 6.0f);
   float dVdr = 4 * epislon * (-12 * s6 *s6/r + 6 * s6/r);
+  if (fabs(dVdr) > F_MAX){
+
+    printf("DEBUG LJ: F: %f R: %f\n", dVdr, r);
+    return F_MAX;
+  }
+  else {
+  printf("DEBUG LJ: F: %f R: %f\n", dVdr, r);
   return dVdr;
+  }
 }
 
 
 void lj_i_acc(float epsilon,
     float sigma,
-    struct Atoms atoms_i,
-    struct Atoms atoms_j){
-
-  float r_ij_x = atoms_i.x - atoms_j.x;
-  float r_ij_y = atoms_i.y - atoms_j.y;
-  float r_ij_z = atoms_i.z - atoms_j.z;
+    struct Atoms *atoms_i,
+    struct Atoms *atoms_j){
+  double f_x;
+  double f_y;
+  double f_z;
+  float r_ij_x = atoms_i->x - atoms_j->x;
+  float r_ij_y = atoms_i->y - atoms_j->y;
+  float r_ij_z = atoms_i->z - atoms_j->z;
   float r_ij = sqrtf(r_ij_x*r_ij_x + r_ij_y*r_ij_y + r_ij_z * r_ij_z);
 
-  double r1 = sqrt(r_ij/sigma);  // double chek it
-  double r2 = 1.0/r_ij;
-  double r6 = r2 * r2 * r2;
-  double fcVal = epsilon * 48.0 * r2 * r6 * (r6 - 0.5);
+  double Fmag = lj_raw_dr(atoms_i->epsilon, atoms_i->sigma, r_ij);
 
-  double f_x = fcVal * r_ij_x;
-  double f_y = fcVal * r_ij_y;
-  double f_z = fcVal * r_ij_z;
+  if (fabs(Fmag) > F_MAX) Fmag = copysignf(F_MAX, Fmag);
+
+  f_x = Fmag * r_ij_x / r_ij;
+  f_y = Fmag * r_ij_y / r_ij;
+  f_z = Fmag * r_ij_z / r_ij;
   
-  atoms_i.a_x += f_x / atoms_i.mass;
-  atoms_i.a_y += f_y / atoms_i.mass;
-  atoms_i.a_z += f_z / atoms_i.mass;
   
-  atoms_j.a_x -= f_x / atoms_j.mass;
-  atoms_j.a_y -= f_y / atoms_i.mass;
-  atoms_j.a_z -= f_z / atoms_i.mass;
+  atoms_i->a_x += f_x / atoms_i->mass;
+  atoms_i->a_y += f_y / atoms_i->mass;
+  atoms_i->a_z += f_z / atoms_i->mass;
+  
+  atoms_j->a_x -= f_x / atoms_j->mass;
+  atoms_j->a_y -= f_y / atoms_j->mass;
+  atoms_j->a_z -= f_z / atoms_j->mass;
   }
 
-
-void clear_acc(struct Atoms atom){
-   atom.a_x = 0;
-   atom.a_y = 0;
-   atom.a_z = 0;
-}
 
 double lj_potential(float epsilon,
     float sigma,
@@ -69,6 +75,10 @@ double lj_potential(float epsilon,
 
   // Calculate parts of LJ potential
   float V = lj_raw(epsilon, sigma, r);
+  if (V > V_MAX){
+    return 0.0f;
+  }
+
 
   // Calculate LJ potential
   return V - Vc - (r - R_MAX)*dVdr;
@@ -110,8 +120,6 @@ int main_lj(int NMAX,
     head[c] = i;
     }
 
-  // Clear forces
-  for (int z=0; z<NMAX; z++) clear_acc(atoms[z]);
 
   // Calculate LJ
   double E_tot = 0;
@@ -158,8 +166,8 @@ int main_lj(int NMAX,
               F_tot += F_i;
               lj_i_acc(atoms[i].epsilon,
                   atoms[i].sigma,
-                  atoms[i],
-                  atoms[j]);
+                  &atoms[i],
+                  &atoms[j]);
             }
           }
           j = lscl[j];

@@ -6,15 +6,12 @@
 #include <math.h>
 #include "main.h"
 
-typedef int (*ModelFn)(int,
-    int,
-    double,
-    struct Atoms[],
-    double []) ;
+typedef int (*ModelFn)(int NMAX,
+                       int NCLMAX,
+                       double R_CUT,
+                       struct Atoms atoms[],
+                       double Region[3]);
 
-void update_velocities(struct Atoms atom, double dt);
-void update_positions(struct Atoms atom, double dt);
-void half_kick(struct Atoms atoms[], double dt, int NMAX);
 void single_step(struct Atoms atoms[], double dt, int NMAX);
 void start_simulation(struct Atoms atoms[],
     int NMAX,

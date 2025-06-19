@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
     NCLMAX,
     R_CUT,
     Region,
-    0.1,
+    1,
     100);
 
   return EXIT_SUCCESS;
