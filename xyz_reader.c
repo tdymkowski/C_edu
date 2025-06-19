@@ -40,7 +40,7 @@ int read_coords(FILE *fptr, struct Atoms coords[], int max_num){
   }
    
   printf("%d\n", max_num);
-  while (num < max_num && fscanf(fptr, "%3s %f %f %f",
+  while (num < max_num && fscanf(fptr, "%8s %f %f %f",
                                  coords[num].symbol,
                                  &coords[num].x,
                                  &coords[num].y,
@@ -64,14 +64,11 @@ int main_xyz_reader(char filename[], struct Atoms coords[], int NMAX){
     fprintf(stderr, "Error: could not open '%s'\n", filename);
     return EXIT_FAILURE;
   }
-  // Get number of atoms
-//  int NMAX = get_max_atoms(fp);
+
   if (NMAX < 0){
     fclose(fp);
     return EXIT_FAILURE;
   }
-
-//  struct Atoms coords[NMAX];
 
   int num = read_coords(fp, coords, NMAX);
   if (num < 0){
@@ -79,7 +76,7 @@ int main_xyz_reader(char filename[], struct Atoms coords[], int NMAX){
     fclose(fp);
     return EXIT_FAILURE;
   }
-  print_coords(stdout, coords, num);
+//  print_coords(stdout, coords, num);
   fclose(fp);
   return EXIT_SUCCESS;
 }

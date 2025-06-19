@@ -10,7 +10,17 @@ struct Atoms {
     float x;
     float y;
     float z;
+    float epsilon;
+    float sigma;
+    float r_cut;
 };
 
+struct Params {
+    char symbol[8];
+    float epsilon;
+    float sigma;
+    float r_cut;
+
+};
 
 #endif

@@ -7,12 +7,7 @@
 #include <math.h>
 #include "main.h"
 
-float lj_potential(float epsilon, float sigma, float r);
-int main_lj(double epsilon,
-            double sigma,
-            int NMAX,
-            int NCLMAX,
-            float R_CUT,
-            struct Atoms atoms[],
-            double Region[3]);
+double lj_potential(float epsilon, float sigma, float r, float R_MAX);
+int main_lj(int NMAX, int NCLMAX, int R_CUT, struct Atoms atoms[], double Region[3]);
+
 #endif
