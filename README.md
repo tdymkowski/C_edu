@@ -4,4 +4,4 @@ A simple implementation of [Lennard-Jones](https://en.wikipedia.org/wiki/Lennard
 
 Neighbours list is created by [cell linked-lists](https://aiichironakano.github.io/cs653/01MD.pdf).
 
-**Currently, the code does not work.**
+**Somehow it works.**
