@@ -89,9 +89,9 @@ void propagate_verlet(PairModels M,
                       double dt,
                       double MAX_T){
     int nsteps = (int)ceil(MAX_T / dt);
-    fprintf(stderr,
-        "DEBUG propagate: dt = %g, MAX_T = %g, ceil(MAX_T/dt) = %d\n",
-        dt, MAX_T, nsteps);
+//    fprintf(stderr,
+//        "DEBUG propagate: dt = %g, MAX_T = %g, ceil(MAX_T/dt) = %d\n",
+//        dt, MAX_T, nsteps);
     for (int step = 0; step < nsteps; step++) {
         // Compute & store forces into atoms[].a_x/y/z
         fprintf(stdout, "Step: %i\n", step);

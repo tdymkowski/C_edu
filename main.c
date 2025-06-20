@@ -3,10 +3,6 @@
 #include "readers/xyz_reader.h"
 #include "main.h"
 #include "verlet.h"
-#include "readers/read_parameters.h"
-#include "neighbors/pair_interactions.h"
-#include "models/models.h"
-#include "models/lj_potential.h"
 
 
 int main(int argc, char *argv[]){
@@ -17,15 +13,12 @@ int main(int argc, char *argv[]){
   }
   const char *model_name = argv[2];
   float R_CUT = 4.;
-  const int NCLMAX = 10;
   // Lx, Ly, Lz
-  double Region[3] = {20., 20., 20.};
+  double Region[3] = {20., 20., 21.};
 
   int NMAX = get_max_atoms(argv[1]);
   struct Atoms atoms[NMAX];
-//  printf("DEBUG main.c: Entering verlet loop\n");
   main_xyz_reader(argv[1], atoms, NMAX);
-//  main_params_reader(atoms, NMAX);
   double dt = 1;
   start_simulation(model_name,
                    atoms,
