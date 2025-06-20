@@ -2,15 +2,20 @@ CC := gcc
 CFLAGS :=-Wall -Wextra -std=c11 -g
 LDFLAGS := -lm
 
-SRCS := main.c xyz_reader.c xyz_writer.c lj_potential.c read_parameters.c verlet.c
+SRCS_DIRS := . models neighbors readers writers
 
-HEADERS := read_parameters.h xyz_reader.h xyz_writer.h lj_potential.h verlet.h main.h 
+SRCS := $(wildcard $(addsuffix /*.c, $(SRCS_DIRS)))
+HEADERS := $(wildcard $(addsuffix /*.h, $(SRCS_DIRS)))
 
-OBJS=$(SRCS:.c=.o)
+OBJS := $(patsubst %.c, %.o, $(SRCS))
 
-TARGET=lj_potential
+TARGET=simple_md
 
 .PHONY: all clean
+
+INCLUDES := $(addprefix -I, $(SRCS_DIRS))
+CFLAGS += $(INCLUDES)
+
 
 all: $(TARGET)
 
