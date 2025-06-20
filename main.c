@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
   const char *model_name = argv[2];
   float R_CUT = 4.;
   // Lx, Ly, Lz
-  double Region[3] = {20., 20., 21.};
+  double Region[3] = {30., 30., 30.};
 
   int NMAX = get_max_atoms(argv[1]);
   struct Atoms atoms[NMAX];
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
                    R_CUT,
                    Region,
                    dt,
-                   100);
+                   1000);
 
   return EXIT_SUCCESS;
 }

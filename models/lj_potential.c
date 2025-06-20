@@ -8,7 +8,7 @@
 
 
 static double kong_s6(struct Atoms *i, struct Atoms *j){
-  if (strcmp(i->symbol, j->symbol) == 1){
+  if (strcmp(i->symbol, j->symbol) == 0){
     return powf(i->sigma, 6.0) * i->epsilon;
   }
   
@@ -20,7 +20,7 @@ static double kong_s6(struct Atoms *i, struct Atoms *j){
 }
 
 static double kong_s12(struct Atoms *i, struct Atoms *j){
-  if (strcmp(i->symbol, j->symbol) == 1){
+  if (strcmp(i->symbol, j->symbol) == 0){
     return powf(i->sigma, 12.0) * i->epsilon;
   }
 
@@ -49,6 +49,9 @@ static inline double lj_raw_kong(float sigma6,
 static inline double lj_raw_dr_kong(float sigma6,
                                     float sigma12,
                                     float r){
+  if (r <= 0.){
+    return 0.0;
+  }
   float r13 = powf(r, 13.);
   float r7 = powf(r, 7.);
   float s_r7 = sigma6/r7;
@@ -101,6 +104,9 @@ double lj_potential_kong(float sigma6,
                          float r,
                          float R_MAX){
   // Calculate potential and slope at the R = R_cutoff
+  if (r <= 0.){
+    return 0.0;
+  }
   float Vc = lj_raw_kong(sigma6, sigma12, R_MAX);
   float dVdr = lj_raw_dr_kong(sigma6, sigma12, R_MAX);
 
@@ -136,15 +142,15 @@ static double lj_force_wrapper(void *vctx,
   double r = get_R(atom_i, atom_j);
   double s6_kong = kong_s6(atom_i, atom_j);
   double s12_kong = kong_s12(atom_i, atom_j);
-  double dVdrMAX = lj_raw_kong(s6_kong, s12_kong, p->R_MAX);
-  double dVdr = lj_raw_kong(s6_kong, s12_kong, r);
+  double dVdrMAX = lj_raw_dr_kong(s6_kong, s12_kong, p->R_MAX);
+  double dVdr = lj_raw_dr_kong(s6_kong, s12_kong, r);
 //  double dVdrMAX = lj_raw_dr(atom_i->epsilon, atom_i->sigma, p->R_MAX);
 //  double dVdr = lj_raw_dr(atom_i->epsilon, atom_i->sigma, r);
   if (fabs(dVdr) > fabs(dVdrMAX)){
-    return dVdrMAX;
+    return -dVdrMAX;
   }
   else {
-    return dVdr;
+    return -dVdr;
   }
 
 }
